@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TextureAtlas imagePath="{imageName}">
+<SubTexture name="head0"  n="head0" x="1" y="1" width="26" w="26" height="29" h="29" frameX="0" frameY="0" frameWidth="26" frameHeight="29"/>
+</TextureAtlas>
