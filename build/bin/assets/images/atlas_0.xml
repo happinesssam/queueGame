@@ -35,4 +35,6 @@
 <SubTexture name="buttonBlueSmallOver"  n="buttonBlueSmallOver" x="237" y="69" width="49" w="49" height="49" h="49" frameX="0" frameY="0" frameWidth="49" frameHeight="49"/>
 <SubTexture name="buttonBlueSmallDown"  n="buttonBlueSmallDown" x="185" y="77" width="49" w="49" height="49" h="49" frameX="0" frameY="0" frameWidth="49" frameHeight="49"/>
 <SubTexture name="buttonBlueSmallUp"  n="buttonBlueSmallUp" x="935" y="52" width="49" w="49" height="49" h="49" frameX="0" frameY="0" frameWidth="49" frameHeight="49"/>
+<SubTexture name="play"  n="play" x="986" y="1" width="28" w="28" height="29" h="29" frameX="0" frameY="0" frameWidth="28" frameHeight="29"/>
+<SubTexture name="pause"  n="pause" x="986" y="32" width="26" w="26" height="28" h="28" frameX="0" frameY="0" frameWidth="26" frameHeight="28"/>
 </TextureAtlas>

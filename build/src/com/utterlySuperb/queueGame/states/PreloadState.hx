@@ -23,7 +23,10 @@ class PreloadState extends State
 	override public function preload():Void
 	{
 		load.atlasXML(Main.SPRITES, 'assets/images/atlas_0.png', 'assets/images/atlas_0.xml');
+		load.audio('beep', ['assets/sounds/beep.mp3', 'assets/sounds/beep.ogg']);
 		load.audio('sell', ['assets/sounds/sell_buy_item.mp3', 'assets/sounds/sell_buy_item.ogg']);
+		load.audio('theme', ['assets/sounds/williamTell.mp3', 'assets/sounds/williamTell.ogg']);
+		load.audio('themeFast', ['assets/sounds/williamTell_fast.mp3', 'assets/sounds/williamTell_fast.ogg']);
 	}
 	
 	override public function create():Void

@@ -24,4 +24,11 @@ class TextHelper
 		var text = new Text(game, x, y, copy, style);
 		return text;
 	}
+	
+	public static function setHudEffect(text:Text):Void
+	{
+		text.stroke = "#0055ef";
+		text.strokeThickness = 5;
+		text.setShadow(2, 2, "#333333", 2, true, false);
+	}
 }

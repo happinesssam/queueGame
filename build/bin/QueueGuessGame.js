@@ -6,6 +6,23 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
+var HxOverrides = function() { };
+HxOverrides.__name__ = true;
+HxOverrides.cca = function(s,index) {
+	var x = s.charCodeAt(index);
+	if(x != x) {
+		return undefined;
+	}
+	return x;
+};
+HxOverrides.remove = function(a,obj) {
+	var i = a.indexOf(obj);
+	if(i == -1) {
+		return false;
+	}
+	a.splice(i,1);
+	return true;
+};
 var Main = function() {
 	this.game = new Phaser.Game(500,800,Phaser.AUTO,"test",null);
 	this.game.state.add("bootState",com_utterlySuperb_queueGame_states_BootState);
@@ -19,6 +36,21 @@ Main.main = function() {
 	new Main();
 };
 Math.__name__ = true;
+var Std = function() { };
+Std.__name__ = true;
+Std.string = function(s) {
+	return js_Boot.__string_rec(s,"");
+};
+Std.parseInt = function(x) {
+	var v = parseInt(x,10);
+	if(v == 0 && (HxOverrides.cca(x,1) == 120 || HxOverrides.cca(x,1) == 88)) {
+		v = parseInt(x);
+	}
+	if(isNaN(v)) {
+		return null;
+	}
+	return v;
+};
 var com_utterlySuperb_queueGame_states_BootState = function() {
 	Phaser.State.call(this);
 };
@@ -41,10 +73,11 @@ com_utterlySuperb_queueGame_states_MainMenuState.prototype = $extend(Phaser.Stat
 		title.x = (this.stage.width - title.width) / 2;
 		this.startButton = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,200,200,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigBlue,"Start",$bind(this,this.clickStart),this);
 		this.startButton.addClickSound(this.game.add.audio("sell"));
+		this.startButton.x = (this.stage.width - this.startButton.width) / 2;
 		this.game.add.existing(this.startButton);
 	}
 	,clickStart: function(button) {
-		this.game.state.start("preloadState");
+		this.game.state.start(com_utterlySuperb_queueGame_states_game_GameState.GAME_STATE);
 	}
 });
 var com_utterlySuperb_queueGame_states_PreloadState = function() {
@@ -55,7 +88,10 @@ com_utterlySuperb_queueGame_states_PreloadState.__super__ = Phaser.State;
 com_utterlySuperb_queueGame_states_PreloadState.prototype = $extend(Phaser.State.prototype,{
 	preload: function() {
 		this.load.atlasXML("sprites","assets/images/atlas_0.png","assets/images/atlas_0.xml");
+		this.load.audio("beep",["assets/sounds/beep.mp3","assets/sounds/beep.ogg"]);
 		this.load.audio("sell",["assets/sounds/sell_buy_item.mp3","assets/sounds/sell_buy_item.ogg"]);
+		this.load.audio("theme",["assets/sounds/williamTell.mp3","assets/sounds/williamTell.ogg"]);
+		this.load.audio("themeFast",["assets/sounds/williamTell_fast.mp3","assets/sounds/williamTell_fast.ogg"]);
 	}
 	,create: function() {
 		this.game.state.start(com_utterlySuperb_queueGame_states_MainMenuState.MAIN_MENU_STATE);
@@ -67,6 +103,422 @@ var com_utterlySuperb_queueGame_states_game_GameState = function() {
 com_utterlySuperb_queueGame_states_game_GameState.__name__ = true;
 com_utterlySuperb_queueGame_states_game_GameState.__super__ = Phaser.State;
 com_utterlySuperb_queueGame_states_game_GameState.prototype = $extend(Phaser.State.prototype,{
+	create: function() {
+		this.game.add.tileSprite(0,0,this.game.width,this.game.height,"sprites","floorTile");
+		this.queues = [];
+		var _g = 0;
+		while(_g < 3) {
+			var i = _g++;
+			this.queues.push(new com_utterlySuperb_queueGame_states_game_gameObjects_Queue(this.game,i));
+			this.game.add.existing(this.queues[i]);
+		}
+		this.hud = new com_utterlySuperb_queueGame_states_game_hud_Hud(this.game);
+		this.game.add.existing(this.hud);
+		this.hud.clickSignal.add($bind(this,this.hudEvent),this);
+		this.theme = this.game.add.audio("theme",1,true);
+		this.themeFast = this.game.add.audio("themeFast",1,true);
+		this.gameStage = com_utterlySuperb_queueGame_states_game_GameStageType.preGame;
+	}
+	,update: function() {
+		switch(this.gameStage[1]) {
+		case 0:case 2:case 3:
+			break;
+		case 1:
+			this.playUpdate();
+			break;
+		}
+	}
+	,playUpdate: function() {
+		var _g1 = 0;
+		var _g = this.speed;
+		while(_g1 < _g) {
+			++_g1;
+			var _g3 = 0;
+			var _g2 = this.queues.length;
+			while(_g3 < _g2) {
+				var i = _g3++;
+				this.queues[i].updateActors();
+				if(this.queues[i].finished) {
+					this.gameStage = com_utterlySuperb_queueGame_states_game_GameStageType.postGame;
+					return;
+				}
+			}
+		}
+	}
+	,hudEvent: function(eventType,eventParam) {
+		switch(eventType) {
+		case "clickBet":
+			this.startGame(Std.parseInt(eventParam));
+			break;
+		case "clickPlayPause":
+			if(this.gameStage == com_utterlySuperb_queueGame_states_game_GameStageType.inGame) {
+				this.gameStage = com_utterlySuperb_queueGame_states_game_GameStageType.isPaused;
+				this.hud.setPlayPause(true);
+				this.currentTheme.pause();
+			} else if(this.gameStage == com_utterlySuperb_queueGame_states_game_GameStageType.isPaused) {
+				this.gameStage = com_utterlySuperb_queueGame_states_game_GameStageType.inGame;
+				this.hud.setPlayPause(false);
+				this.currentTheme.resume();
+			}
+			break;
+		case "switchSpeed":
+			var newSpeed = Std.parseInt(eventParam);
+			if(this.speed != newSpeed) {
+				this.speed = newSpeed;
+				this.checkTheme();
+			}
+			break;
+		}
+	}
+	,checkTheme: function() {
+		if(this.speed > 1) {
+			this.switchTheme(this.theme,this.themeFast);
+		} else if(this.speed == 1) {
+			this.switchTheme(this.themeFast,this.theme);
+		}
+	}
+	,switchTheme: function(theme0,theme1) {
+		if(this.currentTheme != theme1) {
+			this.currentTheme.stop();
+			theme1.play("",0,1,true,false);
+			this.currentTheme = theme1;
+		}
+	}
+	,startGame: function(queue) {
+		this.chosenQueue = queue;
+		this.currentTheme = this.theme;
+		this.speed = 1;
+		this.theme.play("",0,1,true);
+		this.hud.showInGame();
+		this.gameStage = com_utterlySuperb_queueGame_states_game_GameStageType.inGame;
+	}
+});
+var com_utterlySuperb_queueGame_states_game_GameStageType = { __ename__ : true, __constructs__ : ["preGame","inGame","postGame","isPaused"] };
+com_utterlySuperb_queueGame_states_game_GameStageType.preGame = ["preGame",0];
+com_utterlySuperb_queueGame_states_game_GameStageType.preGame.__enum__ = com_utterlySuperb_queueGame_states_game_GameStageType;
+com_utterlySuperb_queueGame_states_game_GameStageType.inGame = ["inGame",1];
+com_utterlySuperb_queueGame_states_game_GameStageType.inGame.__enum__ = com_utterlySuperb_queueGame_states_game_GameStageType;
+com_utterlySuperb_queueGame_states_game_GameStageType.postGame = ["postGame",2];
+com_utterlySuperb_queueGame_states_game_GameStageType.postGame.__enum__ = com_utterlySuperb_queueGame_states_game_GameStageType;
+com_utterlySuperb_queueGame_states_game_GameStageType.isPaused = ["isPaused",3];
+com_utterlySuperb_queueGame_states_game_GameStageType.isPaused.__enum__ = com_utterlySuperb_queueGame_states_game_GameStageType;
+var com_utterlySuperb_queueGame_states_game_gameObjects_Counter = function(game,x,y) {
+	if(y == null) {
+		y = 0;
+	}
+	if(x == null) {
+		x = 0;
+	}
+	this.scanY = 50;
+	this.maxY = 0;
+	this.unloadY = 10;
+	Phaser.Group.call(this,game);
+	this.x = x;
+	this.y = y;
+	this.counter = new Phaser.Sprite(game,20,0,"sprites","counter");
+	this.add(this.counter);
+	this.groceries = new Phaser.Group(game);
+	this.add(this.groceries);
+	this.groceries.x = 14;
+	this.teller = new Phaser.Sprite(game,0,40,"sprites","teller");
+	this.add(this.teller);
+	this.processSpeed = 1 + Math.random();
+	this.groceriesArray = [];
+	this.beep = game.add.audio("beep");
+};
+com_utterlySuperb_queueGame_states_game_gameObjects_Counter.__name__ = true;
+com_utterlySuperb_queueGame_states_game_gameObjects_Counter.__super__ = Phaser.Group;
+com_utterlySuperb_queueGame_states_game_gameObjects_Counter.prototype = $extend(Phaser.Group.prototype,{
+	addNewItem: function(item) {
+		this.groceries.add(item);
+		this.groceriesArray.push(item);
+		item.x = 10;
+		item.y = 120;
+	}
+	,allItemsGone: function() {
+		return this.groceriesArray.length == 0;
+	}
+	,updateItems: function() {
+		this.maxY = 0;
+		var _g1 = 0;
+		var _g = this.groceriesArray.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			if(!this.groceriesArray[i].beenScanned) {
+				this.groceriesArray[i].y = Math.max(Math.max(this.maxY,this.scanY),this.groceriesArray[i].y - this.processSpeed);
+				if(this.groceriesArray[i].y <= this.scanY) {
+					if(this.groceriesArray[i] == this.scanItem) {
+						this.scanTime -= this.processSpeed;
+						if(this.scanTime <= 0) {
+							this.groceriesArray[i].beenScanned = true;
+							this.beep.play();
+						}
+					} else {
+						this.scanTime = 100;
+						this.scanItem = this.groceriesArray[i];
+					}
+				}
+			} else {
+				this.groceriesArray[i].y = Math.max(Math.max(this.maxY,this.unloadY),this.groceriesArray[i].y - this.processSpeed);
+				if(this.groceriesArray[i].y == this.unloadY) {
+					this.itemForUnload = this.groceriesArray[i];
+				}
+			}
+			this.maxY = this.groceriesArray[i].y + this.groceriesArray[i].height;
+		}
+	}
+	,takeItem: function() {
+		this.groceries.remove(this.itemForUnload);
+		HxOverrides.remove(this.groceriesArray,this.itemForUnload);
+		var item = this.itemForUnload;
+		this.itemForUnload = null;
+		return item;
+	}
+	,hasSpaceForItem: function() {
+		return this.maxY < 90;
+	}
+});
+var com_utterlySuperb_queueGame_states_game_gameObjects_GroceryItem = function(game,x,y,key,frame) {
+	Phaser.Sprite.call(this,game,x,y,key,frame);
+};
+com_utterlySuperb_queueGame_states_game_gameObjects_GroceryItem.__name__ = true;
+com_utterlySuperb_queueGame_states_game_gameObjects_GroceryItem.__super__ = Phaser.Sprite;
+com_utterlySuperb_queueGame_states_game_gameObjects_GroceryItem.prototype = $extend(Phaser.Sprite.prototype,{
+});
+var com_utterlySuperb_queueGame_states_game_gameObjects_Queue = function(game,index) {
+	this.unloadY = 180;
+	Phaser.Group.call(this,game);
+	this.index = index;
+	this.x = 15 + 165 * index;
+	this.counter = new com_utterlySuperb_queueGame_states_game_gameObjects_Counter(game,0,175);
+	this.add(this.counter);
+	this.shoppers = [];
+	this.setUp();
+};
+com_utterlySuperb_queueGame_states_game_gameObjects_Queue.__name__ = true;
+com_utterlySuperb_queueGame_states_game_gameObjects_Queue.__super__ = Phaser.Group;
+com_utterlySuperb_queueGame_states_game_gameObjects_Queue.prototype = $extend(Phaser.Group.prototype,{
+	setUp: function() {
+		var numShoppers = 2 + Math.floor(Math.random() * 3);
+		var _g1 = 0;
+		while(_g1 < numShoppers) {
+			++_g1;
+			var shopper = new com_utterlySuperb_queueGame_states_game_gameObjects_Shopper(this.game);
+			this.shoppers.push(shopper);
+			shopper.init(4 + Math.floor(Math.random() * 9),2 + Math.random() * 2,1 + Math.random());
+			this.add(shopper);
+		}
+		this.shoppers[0].y = this.unloadY + 30;
+		var _g11 = 1;
+		var _g = this.shoppers.length;
+		while(_g11 < _g) {
+			var i = _g11++;
+			this.shoppers[i].y = this.shoppers[i - 1].getBot();
+		}
+		this.finished = false;
+	}
+	,updateActors: function() {
+		if(this.shoppers[0].y > this.unloadY) {
+			this.shoppers[0].move(this.unloadY);
+		} else {
+			if(this.counter.hasSpaceForItem() && this.shoppers[0].hasUnboughtItem()) {
+				this.counter.addNewItem(this.shoppers[0].getUnboughtItem());
+			}
+			if(this.counter.itemForUnload != null && this.shoppers[0].canTakeBack()) {
+				var tmp = this.counter.takeItem();
+				this.shoppers[0].addItem(tmp,true);
+			}
+			this.counter.updateItems();
+			var tmp1 = !this.shoppers[0].hasUnboughtItem() && this.counter.allItemsGone();
+		}
+		var _g1 = 1;
+		var _g = this.shoppers.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var tmp2 = this.shoppers[i - 1].getBot();
+			this.shoppers[i].move(tmp2);
+		}
+	}
+});
+var com_utterlySuperb_queueGame_states_game_gameObjects_Shopper = function(game) {
+	Phaser.Group.call(this,game);
+	this.x = 70;
+	this.feet = new Phaser.Sprite(game,35,85,"sprites","feet");
+	this.feet.anchor.x = 0.5;
+	this.add(this.feet);
+	this.cart = new Phaser.Sprite(game,0,0,"sprites","cart");
+	this.add(this.cart);
+	this.groceries = new Phaser.Group(game);
+	this.add(this.groceries);
+	this.body = new Phaser.Sprite(game,10,94,"sprites","body" + Math.floor(Math.random() * 4));
+	this.add(this.body);
+	this.head = new Phaser.Sprite(game,20,94,"sprites","head" + Math.floor(Math.random() * 5));
+	this.add(this.head);
+	this.unboughtItems = [];
+	this.boughtItems = [];
+	this.takeTime = 100;
+};
+com_utterlySuperb_queueGame_states_game_gameObjects_Shopper.__name__ = true;
+com_utterlySuperb_queueGame_states_game_gameObjects_Shopper.__super__ = Phaser.Group;
+com_utterlySuperb_queueGame_states_game_gameObjects_Shopper.prototype = $extend(Phaser.Group.prototype,{
+	init: function(numItems,moveSpeed,processSpeed) {
+		this.moveSpeed = moveSpeed;
+		this.processSpeed = processSpeed;
+		var _g1 = 0;
+		while(_g1 < numItems) {
+			++_g1;
+			this.addItem(new com_utterlySuperb_queueGame_states_game_gameObjects_GroceryItem(this.game,0,0,"sprites",com_utterlySuperb_queueGame_states_game_gameObjects_Shopper.items[Math.floor(Math.random() * com_utterlySuperb_queueGame_states_game_gameObjects_Shopper.items.length)]),false);
+		}
+	}
+	,move: function(minY) {
+		this.y = Math.max(minY,this.y - this.moveSpeed);
+	}
+	,getBot: function() {
+		return this.y + this.height;
+	}
+	,canTakeBack: function() {
+		if(this.takeTime <= 0) {
+			this.takeTime = 100;
+			return true;
+		} else {
+			this.takeTime -= this.processSpeed;
+		}
+		return false;
+	}
+	,addItem: function(item,bought) {
+		this.groceries.add(item);
+		if(bought) {
+			this.boughtItems.push(item);
+		} else {
+			this.unboughtItems.push(item);
+		}
+		item.x = 5 + Math.random() * 35;
+		item.y = 5 + Math.random() * 70;
+	}
+	,canTakeBoughtItem: function() {
+		return false;
+	}
+	,hasUnboughtItem: function() {
+		return this.unboughtItems.length > 0;
+	}
+	,getUnboughtItem: function() {
+		if(this.unboughtItems.length > 0) {
+			var item = this.unboughtItems.shift();
+			this.groceries.remove(item);
+			return item;
+		}
+		return null;
+	}
+});
+var com_utterlySuperb_queueGame_states_game_hud_Hud = function(game) {
+	Phaser.Group.call(this,game);
+	var bg = new Phaser.Graphics(game);
+	bg.beginFill(16774661);
+	bg.drawRect(0,0,game.width,140);
+	bg.beginFill(14526976);
+	bg.drawRect(0,136,game.width,4);
+	bg.beginFill(0,0.5);
+	bg.drawRect(0,140,game.width,4);
+	this.add(bg);
+	this.title = com_utterlySuperb_queueGame_ui_TextHelper.getText(game,0,10,40,"#FFFFFF","Place your bet!".toUpperCase(),"header");
+	this.add(this.title);
+	com_utterlySuperb_queueGame_ui_TextHelper.setHudEffect(this.title);
+	this.showStart();
+	this.clickSignal = new Phaser.Signal();
+};
+com_utterlySuperb_queueGame_states_game_hud_Hud.__name__ = true;
+com_utterlySuperb_queueGame_states_game_hud_Hud.__super__ = Phaser.Group;
+com_utterlySuperb_queueGame_states_game_hud_Hud.prototype = $extend(Phaser.Group.prototype,{
+	showStart: function() {
+		this.setTitle("Place your bet!".toUpperCase());
+		this.betButtons = [];
+		var _g = 0;
+		while(_g < 3) {
+			var i = _g++;
+			var button = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,31 + i * 156,80,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigBlue,"Queue " + (i + 1),$bind(this,this.clickBet),this);
+			button.setButtonWidth(125);
+			this.add(button);
+			button.clickParam = i == null?"null":"" + i;
+			this.betButtons.push(button);
+		}
+	}
+	,showInGame: function() {
+		var _g1 = 0;
+		var _g = this.betButtons.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			this.remove(this.betButtons[i]);
+			this.betButtons[i].destroy(true);
+			console.log(this.betButtons[i]);
+		}
+		this.betButtons = null;
+		this.setTitle("GO!");
+		this.speedWidget = new com_utterlySuperb_queueGame_states_game_hud_SpeedWidget(this.game);
+		this.speedWidget.setSpeed(1);
+		this.speedWidget.changeSignal.add($bind(this,this.speedChange),this);
+		this.add(this.speedWidget);
+		this.playPauseButton = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,420,80,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.smallBlue,"",$bind(this,this.clickPlayPause),this);
+		this.add(this.playPauseButton);
+		this.setPlayPause(false);
+	}
+	,setPlayPause: function(isPaused) {
+		this.playPauseButton.addSprite(isPaused?"play":"pause");
+	}
+	,clickBet: function(button) {
+		this.clickSignal.dispatch("clickBet",button.parent.clickParam);
+	}
+	,clickPlayPause: function(button) {
+		this.clickSignal.dispatch("clickPlayPause");
+	}
+	,speedChange: function() {
+		this.clickSignal.dispatch("switchSpeed",Std.string(this.speedWidget.currentSpeed));
+	}
+	,setTitle: function(copy) {
+		this.title.text = copy;
+		this.title.x = (this.game.width - this.title.width) / 2;
+	}
+});
+var com_utterlySuperb_queueGame_states_game_hud_SpeedWidget = function(game) {
+	this.maxSpeed = 3;
+	this.currentSpeed = -1;
+	Phaser.Group.call(this,game);
+	this.x = 20;
+	this.y = 70;
+	this.slowDown = new com_utterlySuperb_queueGame_ui_PhaserTextButton(game,0,10,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.smallBlue,"<",$bind(this,this.slowDownClick),this);
+	this.add(this.slowDown);
+	this.speedUp = new com_utterlySuperb_queueGame_ui_PhaserTextButton(game,100,10,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.smallBlue,">",$bind(this,this.speedUpClick),this);
+	this.add(this.speedUp);
+	this.speedDisplay = com_utterlySuperb_queueGame_ui_TextHelper.getText(game,55,10,32);
+	this.add(this.speedDisplay);
+	com_utterlySuperb_queueGame_ui_TextHelper.setHudEffect(this.speedDisplay);
+	var label = com_utterlySuperb_queueGame_ui_TextHelper.getText(game,40,-25,24,"#FFFFFF","Speed");
+	this.add(label);
+	com_utterlySuperb_queueGame_ui_TextHelper.setHudEffect(label);
+	this.changeSignal = new Phaser.Signal();
+};
+com_utterlySuperb_queueGame_states_game_hud_SpeedWidget.__name__ = true;
+com_utterlySuperb_queueGame_states_game_hud_SpeedWidget.__super__ = Phaser.Group;
+com_utterlySuperb_queueGame_states_game_hud_SpeedWidget.prototype = $extend(Phaser.Group.prototype,{
+	speedUpClick: function(button) {
+		this.setSpeed(this.currentSpeed + 1);
+	}
+	,slowDownClick: function(button) {
+		this.setSpeed(this.currentSpeed - 1);
+	}
+	,setSpeed: function(speed) {
+		speed = Math.floor(Math.min(this.maxSpeed,Math.max(1,speed)));
+		if(speed != this.currentSpeed) {
+			this.currentSpeed = speed;
+			this.speedDisplay.text = Std.string(this.currentSpeed);
+			this.changeSignal.dispatch();
+			this.speedDisplay.x = 75 - Math.floor(this.speedDisplay.width / 2);
+		}
+	}
+	,cleanUp: function() {
+		this.changeSignal.dispose();
+	}
+	,disable: function() {
+	}
 });
 var com_utterlySuperb_queueGame_ui_PhaserTextButton = function(game,x,y,type,copy,callback,context) {
 	if(copy == null) {
@@ -93,14 +545,14 @@ var com_utterlySuperb_queueGame_ui_PhaserTextButton = function(game,x,y,type,cop
 		framePrefix = "buttonYellowBig";
 		break;
 	case 1:
-		framePrefix = "buttonSmallYellow";
+		framePrefix = "buttonYellowSmall";
 		size = 22;
 		break;
 	case 2:
 		framePrefix = "buttonBlueBig";
 		break;
 	case 3:
-		framePrefix = "buttonSmallBlue";
+		framePrefix = "buttonBlueSmall";
 		size = 22;
 		break;
 	}
@@ -118,7 +570,11 @@ var com_utterlySuperb_queueGame_ui_PhaserTextButton = function(game,x,y,type,cop
 com_utterlySuperb_queueGame_ui_PhaserTextButton.__name__ = true;
 com_utterlySuperb_queueGame_ui_PhaserTextButton.__super__ = Phaser.Group;
 com_utterlySuperb_queueGame_ui_PhaserTextButton.prototype = $extend(Phaser.Group.prototype,{
-	addOverSound: function(sound) {
+	setButtonWidth: function(width) {
+		this.button.width = width;
+		this.centerText();
+	}
+	,addOverSound: function(sound) {
 		this.button.setOverSound(sound);
 	}
 	,addClickSound: function(sound) {
@@ -130,8 +586,14 @@ com_utterlySuperb_queueGame_ui_PhaserTextButton.prototype = $extend(Phaser.Group
 		this.sprite.x = Math.round((this.button.width - this.sprite.width) / 2);
 		this.sprite.y = Math.round((this.button.height - this.sprite.height) / 2);
 	}
+	,hideSprite: function() {
+		this.sprite.visible = false;
+	}
 	,setText: function(copy) {
 		this.text.text = copy;
+		this.centerText();
+	}
+	,centerText: function() {
 		this.text.x = Math.round((this.button.width - this.text.width) / 2);
 		this.text.y = Math.round((this.button.height - this.text.height) / 2);
 	}
@@ -172,6 +634,11 @@ com_utterlySuperb_queueGame_ui_TextHelper.getText = function(game,x,y,size,colou
 	}
 	var style = { font : size + "px " + (type == "body"?"Arial":"Georgia"), fill : colour, align : align};
 	return new Phaser.Text(game,x,y,copy,style);
+};
+com_utterlySuperb_queueGame_ui_TextHelper.setHudEffect = function(text) {
+	text.stroke = "#0055ef";
+	text.strokeThickness = 5;
+	text.setShadow(2,2,"#333333",2,true,false);
 };
 var js_Boot = function() { };
 js_Boot.__name__ = true;
@@ -268,6 +735,10 @@ com_utterlySuperb_queueGame_states_BootState.BOOT_STATE = "bootState";
 com_utterlySuperb_queueGame_states_MainMenuState.MAIN_MENU_STATE = "mainMenuState";
 com_utterlySuperb_queueGame_states_PreloadState.PRELOAD_STATE = "preloadState";
 com_utterlySuperb_queueGame_states_game_GameState.GAME_STATE = "gameState";
+com_utterlySuperb_queueGame_states_game_gameObjects_Shopper.items = ["box","bread","carrot","crisps","juice","bananas","ketchup","lettuce","toiletPaper"];
+com_utterlySuperb_queueGame_states_game_hud_Hud.CLICK_BET = "clickBet";
+com_utterlySuperb_queueGame_states_game_hud_Hud.SWITCH_SPEED = "switchSpeed";
+com_utterlySuperb_queueGame_states_game_hud_Hud.CLICK_PLAY_PAUSE = "clickPlayPause";
 com_utterlySuperb_queueGame_ui_TextHelper.HEADER = "header";
 com_utterlySuperb_queueGame_ui_TextHelper.BODY = "body";
 Main.main();

@@ -17,6 +17,7 @@ class PhaserTextButton extends Group
 	private var button:Button;
 	private var text:Text;
 	private var sprite:Sprite;
+	public var clickParam:String;
 
 	public function new(game:Game, x:Int = 0, y:Int = 0, type:PhaserTextButtonType = null, copy:String="", callback:Button->Void = null, context:Dynamic = null) 
 	{
@@ -36,10 +37,10 @@ class PhaserTextButton extends Group
 			case bigBlue:
 				framePrefix = "buttonBlueBig";				
 			case smallYellow:
-				framePrefix = "buttonSmallYellow";
+				framePrefix = "buttonYellowSmall";
 				size = 22;
 			case smallBlue:
-				framePrefix = "buttonSmallBlue";
+				framePrefix = "buttonBlueSmall";
 				size = 22;				
 		}
 		
@@ -57,6 +58,12 @@ class PhaserTextButton extends Group
 		sprite = new Sprite(game, 0, 0, Main.SPRITES);
 		add(sprite);
 		sprite.visible = false;
+	}
+	
+	public function setButtonWidth(width:Int):Void
+	{
+		button.width = width;
+		centerText();
 	}
 	
 	public function addOverSound(sound:Sound):Void
@@ -77,9 +84,19 @@ class PhaserTextButton extends Group
 		sprite.y = Math.round((button.height - sprite.height) / 2);
 	}
 	
+	public function hideSprite():Void
+	{
+		sprite.visible = false;
+	}
+	
 	public function setText(copy:String):Void
 	{
 		text.text = copy;
+		centerText();
+	}
+	
+	private function centerText():Void
+	{
 		text.x = Math.round((button.width - text.width) / 2);
 		text.y = Math.round((button.height - text.height) / 2);
 	}

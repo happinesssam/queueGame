@@ -69,6 +69,9 @@ package
 			addBespoke("buttonBlueSmallDown", "blue_button08");
 			addBespoke("buttonBlueSmallUp", "blue_button09");
 			
+			addBespoke("play", "play");
+			addBespoke("pause", "pause");
+			
 			loadAssets();
 		}
 		
