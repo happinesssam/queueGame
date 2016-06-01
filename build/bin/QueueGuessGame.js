@@ -9,20 +9,266 @@ function $extend(from, fields) {
 var Main = function() {
 	this.game = new Phaser.Game(500,800,Phaser.AUTO,"test",null);
 	this.game.state.add("bootState",com_utterlySuperb_queueGame_states_BootState);
+	this.game.state.add("preloadState",com_utterlySuperb_queueGame_states_PreloadState);
+	this.game.state.add(com_utterlySuperb_queueGame_states_MainMenuState.MAIN_MENU_STATE,com_utterlySuperb_queueGame_states_MainMenuState);
+	this.game.state.add(com_utterlySuperb_queueGame_states_game_GameState.GAME_STATE,com_utterlySuperb_queueGame_states_game_GameState);
 	this.game.state.start("bootState");
 };
+Main.__name__ = true;
 Main.main = function() {
 	new Main();
 };
+Math.__name__ = true;
 var com_utterlySuperb_queueGame_states_BootState = function() {
 	Phaser.State.call(this);
 };
+com_utterlySuperb_queueGame_states_BootState.__name__ = true;
 com_utterlySuperb_queueGame_states_BootState.__super__ = Phaser.State;
 com_utterlySuperb_queueGame_states_BootState.prototype = $extend(Phaser.State.prototype,{
 	create: function() {
-		this.game.add.text(this.game.world.centerX - 300,0,"Haxe + Phaser\nAwesome!",{ font : "65px Arial", fill : "#ff0044", align : "center"});
+		this.game.state.start("preloadState");
 	}
 });
+var com_utterlySuperb_queueGame_states_MainMenuState = function() {
+	Phaser.State.call(this);
+};
+com_utterlySuperb_queueGame_states_MainMenuState.__name__ = true;
+com_utterlySuperb_queueGame_states_MainMenuState.__super__ = Phaser.State;
+com_utterlySuperb_queueGame_states_MainMenuState.prototype = $extend(Phaser.State.prototype,{
+	create: function() {
+		var title = com_utterlySuperb_queueGame_ui_TextHelper.getText(this.game,0,100,40,"#FFFFFF","Queueueuz");
+		this.game.add.existing(title);
+		title.x = (this.stage.width - title.width) / 2;
+		this.startButton = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,200,200,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigBlue,"Start",$bind(this,this.clickStart),this);
+		this.startButton.addClickSound(this.game.add.audio("sell"));
+		this.game.add.existing(this.startButton);
+	}
+	,clickStart: function(button) {
+		this.game.state.start("preloadState");
+	}
+});
+var com_utterlySuperb_queueGame_states_PreloadState = function() {
+	Phaser.State.call(this);
+};
+com_utterlySuperb_queueGame_states_PreloadState.__name__ = true;
+com_utterlySuperb_queueGame_states_PreloadState.__super__ = Phaser.State;
+com_utterlySuperb_queueGame_states_PreloadState.prototype = $extend(Phaser.State.prototype,{
+	preload: function() {
+		this.load.atlasXML("sprites","assets/images/atlas_0.png","assets/images/atlas_0.xml");
+		this.load.audio("sell",["assets/sounds/sell_buy_item.mp3","assets/sounds/sell_buy_item.ogg"]);
+	}
+	,create: function() {
+		this.game.state.start(com_utterlySuperb_queueGame_states_MainMenuState.MAIN_MENU_STATE);
+	}
+});
+var com_utterlySuperb_queueGame_states_game_GameState = function() {
+	Phaser.State.call(this);
+};
+com_utterlySuperb_queueGame_states_game_GameState.__name__ = true;
+com_utterlySuperb_queueGame_states_game_GameState.__super__ = Phaser.State;
+com_utterlySuperb_queueGame_states_game_GameState.prototype = $extend(Phaser.State.prototype,{
+});
+var com_utterlySuperb_queueGame_ui_PhaserTextButton = function(game,x,y,type,copy,callback,context) {
+	if(copy == null) {
+		copy = "";
+	}
+	if(y == null) {
+		y = 0;
+	}
+	if(x == null) {
+		x = 0;
+	}
+	Phaser.Group.call(this,game);
+	this.x = x;
+	this.y = y;
+	if(type == null) {
+		type = com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigYellow;
+	} else {
+		type = type;
+	}
+	var framePrefix = "buttonYellowBig";
+	var size = 28;
+	switch(type[1]) {
+	case 0:
+		framePrefix = "buttonYellowBig";
+		break;
+	case 1:
+		framePrefix = "buttonSmallYellow";
+		size = 22;
+		break;
+	case 2:
+		framePrefix = "buttonBlueBig";
+		break;
+	case 3:
+		framePrefix = "buttonSmallBlue";
+		size = 22;
+		break;
+	}
+	this.button = new Phaser.Button(game,0,0,"sprites",callback,context,framePrefix + "Over",framePrefix + "Up",framePrefix + "Down",framePrefix + "Over");
+	this.add(this.button);
+	this.text = com_utterlySuperb_queueGame_ui_TextHelper.getText(game,0,0,size);
+	this.add(this.text);
+	if(copy.length > 0) {
+		this.setText(copy);
+	}
+	this.sprite = new Phaser.Sprite(game,0,0,"sprites");
+	this.add(this.sprite);
+	this.sprite.visible = false;
+};
+com_utterlySuperb_queueGame_ui_PhaserTextButton.__name__ = true;
+com_utterlySuperb_queueGame_ui_PhaserTextButton.__super__ = Phaser.Group;
+com_utterlySuperb_queueGame_ui_PhaserTextButton.prototype = $extend(Phaser.Group.prototype,{
+	addOverSound: function(sound) {
+		this.button.setOverSound(sound);
+	}
+	,addClickSound: function(sound) {
+		this.button.setUpSound(sound);
+	}
+	,addSprite: function(frame) {
+		this.sprite.frameName = frame;
+		this.sprite.visible = true;
+		this.sprite.x = Math.round((this.button.width - this.sprite.width) / 2);
+		this.sprite.y = Math.round((this.button.height - this.sprite.height) / 2);
+	}
+	,setText: function(copy) {
+		this.text.text = copy;
+		this.text.x = Math.round((this.button.width - this.text.width) / 2);
+		this.text.y = Math.round((this.button.height - this.text.height) / 2);
+	}
+});
+var com_utterlySuperb_queueGame_ui_PhaserTextButtonType = { __ename__ : true, __constructs__ : ["bigYellow","smallYellow","bigBlue","smallBlue"] };
+com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigYellow = ["bigYellow",0];
+com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigYellow.__enum__ = com_utterlySuperb_queueGame_ui_PhaserTextButtonType;
+com_utterlySuperb_queueGame_ui_PhaserTextButtonType.smallYellow = ["smallYellow",1];
+com_utterlySuperb_queueGame_ui_PhaserTextButtonType.smallYellow.__enum__ = com_utterlySuperb_queueGame_ui_PhaserTextButtonType;
+com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigBlue = ["bigBlue",2];
+com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigBlue.__enum__ = com_utterlySuperb_queueGame_ui_PhaserTextButtonType;
+com_utterlySuperb_queueGame_ui_PhaserTextButtonType.smallBlue = ["smallBlue",3];
+com_utterlySuperb_queueGame_ui_PhaserTextButtonType.smallBlue.__enum__ = com_utterlySuperb_queueGame_ui_PhaserTextButtonType;
+var com_utterlySuperb_queueGame_ui_TextHelper = function() {
+};
+com_utterlySuperb_queueGame_ui_TextHelper.__name__ = true;
+com_utterlySuperb_queueGame_ui_TextHelper.getText = function(game,x,y,size,colour,copy,type,align) {
+	if(align == null) {
+		align = "left";
+	}
+	if(type == null) {
+		type = "body";
+	}
+	if(copy == null) {
+		copy = "";
+	}
+	if(colour == null) {
+		colour = "#FFFFFF";
+	}
+	if(size == null) {
+		size = 18;
+	}
+	if(y == null) {
+		y = 0;
+	}
+	if(x == null) {
+		x = 0;
+	}
+	var style = { font : size + "px " + (type == "body"?"Arial":"Georgia"), fill : colour, align : align};
+	return new Phaser.Text(game,x,y,copy,style);
+};
+var js_Boot = function() { };
+js_Boot.__name__ = true;
+js_Boot.__string_rec = function(o,s) {
+	if(o == null) {
+		return "null";
+	}
+	if(s.length >= 5) {
+		return "<...>";
+	}
+	var t = typeof(o);
+	if(t == "function" && (o.__name__ || o.__ename__)) {
+		t = "object";
+	}
+	switch(t) {
+	case "function":
+		return "<function>";
+	case "object":
+		if(o instanceof Array) {
+			if(o.__enum__) {
+				if(o.length == 2) {
+					return o[0];
+				}
+				var str = o[0] + "(";
+				s += "\t";
+				var _g1 = 2;
+				var _g = o.length;
+				while(_g1 < _g) {
+					var i = _g1++;
+					if(i != 2) {
+						str += "," + js_Boot.__string_rec(o[i],s);
+					} else {
+						str += js_Boot.__string_rec(o[i],s);
+					}
+				}
+				return str + ")";
+			}
+			var l = o.length;
+			var i1;
+			var str1 = "[";
+			s += "\t";
+			var _g11 = 0;
+			var _g2 = l;
+			while(_g11 < _g2) {
+				var i2 = _g11++;
+				str1 += (i2 > 0?",":"") + js_Boot.__string_rec(o[i2],s);
+			}
+			str1 += "]";
+			return str1;
+		}
+		var tostr;
+		try {
+			tostr = o.toString;
+		} catch( e ) {
+			return "???";
+		}
+		if(tostr != null && tostr != Object.toString && typeof(tostr) == "function") {
+			var s2 = o.toString();
+			if(s2 != "[object Object]") {
+				return s2;
+			}
+		}
+		var k = null;
+		var str2 = "{\n";
+		s += "\t";
+		var hasp = o.hasOwnProperty != null;
+		for( var k in o ) {
+		if(hasp && !o.hasOwnProperty(k)) {
+			continue;
+		}
+		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__" || k == "__properties__") {
+			continue;
+		}
+		if(str2.length != 2) {
+			str2 += ", \n";
+		}
+		str2 += s + k + " : " + js_Boot.__string_rec(o[k],s);
+		}
+		s = s.substring(1);
+		str2 += "\n" + s + "}";
+		return str2;
+	case "string":
+		return o;
+	default:
+		return String(o);
+	}
+};
+var $_, $fid = 0;
+function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
+String.__name__ = true;
+Array.__name__ = true;
+Main.SPRITES = "sprites";
 com_utterlySuperb_queueGame_states_BootState.BOOT_STATE = "bootState";
+com_utterlySuperb_queueGame_states_MainMenuState.MAIN_MENU_STATE = "mainMenuState";
+com_utterlySuperb_queueGame_states_PreloadState.PRELOAD_STATE = "preloadState";
+com_utterlySuperb_queueGame_states_game_GameState.GAME_STATE = "gameState";
+com_utterlySuperb_queueGame_ui_TextHelper.HEADER = "header";
+com_utterlySuperb_queueGame_ui_TextHelper.BODY = "body";
 Main.main();
 })();

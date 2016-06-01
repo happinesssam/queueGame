@@ -8,7 +8,8 @@ import phaser.core.State;
  */
 class GameState extends State
 {
-
+	public static var GAME_STATE:String = "gameState";
+	
 	public function new() 
 	{
 		super();

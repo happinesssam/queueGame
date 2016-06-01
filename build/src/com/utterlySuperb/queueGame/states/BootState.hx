@@ -18,6 +18,6 @@ class BootState extends State
 	
 	override public function create():Void
 	{
-		state.start(PreloadState.PRELOAD_STATE);
+		game.state.start(PreloadState.PRELOAD_STATE);
 	}
 }

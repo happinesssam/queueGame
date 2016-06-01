@@ -31,7 +31,43 @@ package
 			ac.setOutputSize(1024, 1024);
 			addChild(ac);
 			
+			addBespoke("body0", "body0");
+			addBespoke("body1", "body1");
+			addBespoke("body2", "body2");
+			addBespoke("body3", "body3");
+			addBespoke("box", "box");
+			addBespoke("bread", "bread");
+			addBespoke("carrot", "carrot");
+			addBespoke("cart", "cart");
+			addBespoke("counter", "counter");
+			addBespoke("crisps", "crisps");
+			addBespoke("feet", "feet");
+			addBespoke("floorTile", "floorTile");
 			addBespoke("head0", "head0");
+			addBespoke("head1", "head1");
+			addBespoke("head2", "head2");
+			addBespoke("head3", "head3");
+			addBespoke("head4", "head4");
+			addBespoke("juice", "juice");
+			addBespoke("bananas", "bananas");
+			addBespoke("ketchup", "ketchup");
+			addBespoke("lettuce", "lettuce");
+			addBespoke("teller", "teller");
+			addBespoke("toiletPaper", "toiletPaper");
+			
+			addBespoke("buttonYellowBigOver", "yellow_button00");
+			addBespoke("buttonYellowBigDown", "yellow_button01");
+			addBespoke("buttonYellowBigUp", "yellow_button02");
+			addBespoke("buttonYellowSmallOver", "yellow_button07");
+			addBespoke("buttonYellowSmallDown", "yellow_button08");
+			addBespoke("buttonYellowSmallUp", "yellow_button09");
+			
+			addBespoke("buttonBlueBigOver", "blue_button00");
+			addBespoke("buttonBlueBigDown", "blue_button01");
+			addBespoke("buttonBlueBigUp", "blue_button02");
+			addBespoke("buttonBlueSmallOver", "blue_button07");
+			addBespoke("buttonBlueSmallDown", "blue_button08");
+			addBespoke("buttonBlueSmallUp", "blue_button09");
 			
 			loadAssets();
 		}

@@ -1,4 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TextureAtlas imagePath="{imageName}">
-<SubTexture name="head0"  n="head0" x="1" y="1" width="26" w="26" height="29" h="29" frameX="0" frameY="0" frameWidth="26" frameHeight="29"/>
+<SubTexture name="body0"  n="body0" x="1" y="1" width="49" w="49" height="34" h="34" frameX="0" frameY="0" frameWidth="49" frameHeight="34"/>
+<SubTexture name="body1"  n="body1" x="52" y="1" width="49" w="49" height="34" h="34" frameX="0" frameY="0" frameWidth="49" frameHeight="34"/>
+<SubTexture name="body2"  n="body2" x="103" y="1" width="49" w="49" height="34" h="34" frameX="0" frameY="0" frameWidth="49" frameHeight="34"/>
+<SubTexture name="body3"  n="body3" x="154" y="1" width="49" w="49" height="34" h="34" frameX="0" frameY="0" frameWidth="49" frameHeight="34"/>
+<SubTexture name="box"  n="box" x="205" y="1" width="17" w="17" height="24" h="24" frameX="0" frameY="0" frameWidth="17" frameHeight="24"/>
+<SubTexture name="bread"  n="bread" x="205" y="27" width="33" w="33" height="18" h="18" frameX="0" frameY="0" frameWidth="33" frameHeight="18"/>
+<SubTexture name="carrot"  n="carrot" x="1" y="37" width="30" w="30" height="48" h="48" frameX="0" frameY="0" frameWidth="30" frameHeight="48"/>
+<SubTexture name="cart"  n="cart" x="33" y="37" width="71" w="71" height="102" h="102" frameX="0" frameY="0" frameWidth="71" frameHeight="102"/>
+<SubTexture name="counter"  n="counter" x="106" y="37" width="50" w="50" height="128" h="128" frameX="0" frameY="0" frameWidth="50" frameHeight="128"/>
+<SubTexture name="crisps"  n="crisps" x="1" y="87" width="16" w="16" height="32" h="32" frameX="0" frameY="0" frameWidth="16" frameHeight="32"/>
+<SubTexture name="feet"  n="feet" x="1" y="121" width="30" w="30" height="43" h="43" frameX="0" frameY="0" frameWidth="30" frameHeight="43"/>
+<SubTexture name="floorTile"  n="floorTile" x="33" y="141" width="64" w="64" height="64" h="64" frameX="0" frameY="0" frameWidth="64" frameHeight="64"/>
+<SubTexture name="head0"  n="head0" x="1" y="166" width="26" w="26" height="29" h="29" frameX="0" frameY="0" frameWidth="26" frameHeight="29"/>
+<SubTexture name="head1"  n="head1" x="1" y="197" width="26" w="26" height="29" h="29" frameX="0" frameY="0" frameWidth="26" frameHeight="29"/>
+<SubTexture name="head2"  n="head2" x="158" y="37" width="26" w="26" height="29" h="29" frameX="0" frameY="0" frameWidth="26" frameHeight="29"/>
+<SubTexture name="head3"  n="head3" x="224" y="1" width="26" w="26" height="24" h="24" frameX="0" frameY="0" frameWidth="26" frameHeight="24"/>
+<SubTexture name="head4"  n="head4" x="240" y="27" width="26" w="26" height="24" h="24" frameX="0" frameY="0" frameWidth="26" frameHeight="24"/>
+<SubTexture name="juice"  n="juice" x="252" y="1" width="19" w="19" height="20" h="20" frameX="0" frameY="0" frameWidth="19" frameHeight="20"/>
+<SubTexture name="bananas"  n="bananas" x="186" y="47" width="32" w="32" height="27" h="27" frameX="0" frameY="0" frameWidth="32" frameHeight="27"/>
+<SubTexture name="ketchup"  n="ketchup" x="220" y="47" width="15" w="15" height="28" h="28" frameX="0" frameY="0" frameWidth="15" frameHeight="28"/>
+<SubTexture name="lettuce"  n="lettuce" x="158" y="68" width="25" w="25" height="42" h="42" frameX="0" frameY="0" frameWidth="25" frameHeight="42"/>
+<SubTexture name="teller"  n="teller" x="268" y="23" width="38" w="38" height="44" h="44" frameX="0" frameY="0" frameWidth="38" frameHeight="44"/>
+<SubTexture name="toiletPaper"  n="toiletPaper" x="273" y="1" width="14" w="14" height="16" h="16" frameX="0" frameY="0" frameWidth="14" frameHeight="16"/>
+<SubTexture name="buttonYellowBigOver"  n="buttonYellowBigOver" x="308" y="1" width="190" w="190" height="49" h="49" frameX="0" frameY="0" frameWidth="190" frameHeight="49"/>
+<SubTexture name="buttonYellowBigDown"  n="buttonYellowBigDown" x="500" y="1" width="190" w="190" height="49" h="49" frameX="0" frameY="0" frameWidth="190" frameHeight="49"/>
+<SubTexture name="buttonYellowBigUp"  n="buttonYellowBigUp" x="692" y="1" width="190" w="190" height="49" h="49" frameX="0" frameY="0" frameWidth="190" frameHeight="49"/>
+<SubTexture name="buttonYellowSmallOver"  n="buttonYellowSmallOver" x="884" y="1" width="49" w="49" height="49" h="49" frameX="0" frameY="0" frameWidth="49" frameHeight="49"/>
+<SubTexture name="buttonYellowSmallDown"  n="buttonYellowSmallDown" x="935" y="1" width="49" w="49" height="49" h="49" frameX="0" frameY="0" frameWidth="49" frameHeight="49"/>
+<SubTexture name="buttonYellowSmallUp"  n="buttonYellowSmallUp" x="308" y="52" width="49" w="49" height="49" h="49" frameX="0" frameY="0" frameWidth="49" frameHeight="49"/>
+<SubTexture name="buttonBlueBigOver"  n="buttonBlueBigOver" x="359" y="52" width="190" w="190" height="49" h="49" frameX="0" frameY="0" frameWidth="190" frameHeight="49"/>
+<SubTexture name="buttonBlueBigDown"  n="buttonBlueBigDown" x="551" y="52" width="190" w="190" height="49" h="49" frameX="0" frameY="0" frameWidth="190" frameHeight="49"/>
+<SubTexture name="buttonBlueBigUp"  n="buttonBlueBigUp" x="743" y="52" width="190" w="190" height="49" h="49" frameX="0" frameY="0" frameWidth="190" frameHeight="49"/>
+<SubTexture name="buttonBlueSmallOver"  n="buttonBlueSmallOver" x="237" y="69" width="49" w="49" height="49" h="49" frameX="0" frameY="0" frameWidth="49" frameHeight="49"/>
+<SubTexture name="buttonBlueSmallDown"  n="buttonBlueSmallDown" x="185" y="77" width="49" w="49" height="49" h="49" frameX="0" frameY="0" frameWidth="49" frameHeight="49"/>
+<SubTexture name="buttonBlueSmallUp"  n="buttonBlueSmallUp" x="935" y="52" width="49" w="49" height="49" h="49" frameX="0" frameY="0" frameWidth="49" frameHeight="49"/>
 </TextureAtlas>
