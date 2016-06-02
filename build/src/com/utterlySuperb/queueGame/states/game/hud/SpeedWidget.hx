@@ -19,6 +19,9 @@ class SpeedWidget extends Group
 	private var slowDown:PhaserTextButton;
 	public var currentSpeed:Int = -1;
 	private var maxSpeed:Int = 3;
+	private var minSpeed:Int = 1;
+	private var increment:Int = 1;
+	var label:Text;
 	public var changeSignal:Signal;
 	
 	public function new(game:Game) 
@@ -35,26 +38,36 @@ class SpeedWidget extends Group
 		add(speedDisplay);
 		TextHelper.setHudEffect(speedDisplay);
 		
-		var label:Text = TextHelper.getText(game, 40, -25, 24, "#FFFFFF", "Speed");
+		label = TextHelper.getText(game, 40, -25, 24, "#FFFFFF", "Speed");
 		add(label);
 		TextHelper.setHudEffect(label);
 		
 		changeSignal = new Signal();
 	}
 	
+	public function setUp(copy:String, defaultVal:Int, minVal:Int, maxVal:Int, increment:Int):Void
+	{
+		this.increment = increment;
+		label.text = copy;
+		currentSpeed = defaultVal;
+		speedDisplay.text = Std.string(currentSpeed);
+		maxSpeed = maxVal;
+		minSpeed = minVal;
+	}
+	
 	function speedUpClick(button:Button):Void
 	{
-		setSpeed(currentSpeed + 1);
+		setSpeed(currentSpeed + increment);
 	}
 	
 	function slowDownClick(button:Button) :Void
 	{
-		setSpeed(currentSpeed - 1);
+		setSpeed(currentSpeed - increment);
 	}
 	
 	public function setSpeed(speed:Int):Void
 	{
-		speed = Math.floor(Math.min(maxSpeed, Math.max(1, speed)));
+		speed = Math.floor(Math.min(maxSpeed, Math.max(minSpeed, speed)));
 		if (speed != currentSpeed)
 		{
 			currentSpeed = speed;

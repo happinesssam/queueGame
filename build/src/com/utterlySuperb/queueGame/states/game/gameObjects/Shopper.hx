@@ -21,7 +21,7 @@ class Shopper extends Group
 	private var boughtItems:Array<GroceryItem>;
 	
 	private var moveSpeed:Float;
-	private var processSpeed:Float;
+	public var processSpeed:Float;
 	private var takeTime:Float;
 	
 	private static var items:Array<String> = ["box", "bread", "carrot", "crisps", "juice", "bananas", "ketchup", "lettuce", "toiletPaper"];

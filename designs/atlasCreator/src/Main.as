@@ -72,6 +72,16 @@ package
 			addBespoke("play", "play");
 			addBespoke("pause", "pause");
 			
+			addBespoke("paying0", "paying0");
+			addBespoke("paying1", "paying1");
+			
+			addBespoke("audioOff", "audioOff");
+			addBespoke("audioOn", "audioOn");
+			
+			addBespoke("medal0", "medal_gold");
+			addBespoke("medal1", "medal_silver");
+			addBespoke("medal2", "medal_bronze");
+			
 			loadAssets();
 		}
 		

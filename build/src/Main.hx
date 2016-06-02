@@ -1,5 +1,6 @@
 package;
 
+import com.utterlySuperb.queueGame.data.GameData;
 import com.utterlySuperb.queueGame.states.BootState;
 import com.utterlySuperb.queueGame.states.game.GameState;
 import com.utterlySuperb.queueGame.states.MainMenuState;
@@ -16,6 +17,8 @@ import phaser.Phaser;
 class Main 
 {
 	static public inline var SPRITES:String = "sprites";
+	
+	public static var gameData:GameData;
 	
 	var game:Game;
 	

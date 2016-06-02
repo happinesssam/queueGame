@@ -1,5 +1,6 @@
 package com.utterlySuperb.queueGame.states.game;
 
+import com.utterlySuperb.queueGame.data.SaveManager;
 import com.utterlySuperb.queueGame.states.game.gameObjects.Queue;
 import com.utterlySuperb.queueGame.states.game.gameObjects.Shopper;
 import com.utterlySuperb.queueGame.states.game.hud.Hud;
@@ -22,6 +23,8 @@ class GameState extends State
 	private var chosenQueue:Int;
 	private var speed:Int;
 	private var gameStage:GameStageType;
+	private var finishPositions:Array<Int>;
+	private var bet:Int;
 	
 	public function new() 
 	{
@@ -33,6 +36,7 @@ class GameState extends State
 	{
 		var floor = game.add.tileSprite(0, 0, game.width, game.height, Main.SPRITES, "floorTile");
 		
+		finishPositions = [];
 		queues = [];
 		for (i in 0...3)
 		{
@@ -43,6 +47,9 @@ class GameState extends State
 		hud = new Hud(game);
 		game.add.existing(hud);
 		hud.clickSignal.add(hudEvent, this);
+		bet = 10;
+		hud.showStart(bet);
+		hud.setStartmoney(Main.gameData.money - bet);
 		
 		theme = game.add.audio('theme', 1, true);
 		themeFast = game.add.audio('themeFast', 1, true);
@@ -64,14 +71,41 @@ class GameState extends State
 	{
 		for (j in 0...speed)
 		{
+			var queuesDone:Int = 0;
 			for (i in 0...queues.length)
 			{
 				queues[i].updateActors();
 				if (queues[i].finished)
 				{
-					gameStage = postGame;
-					return;
+					if (finishPositions.indexOf(i) == -1)
+					{
+						finishPositions.push(i);
+						queues[i].setFinishPos(finishPositions.length);
+					}
+					else if (queues[i].allShoppersOut())
+					{
+						queuesDone++;
+					}
 				}
+			}
+			if (queuesDone == 3)
+			{
+				gameStage = postGame;
+				var multiplier:Float = 0;
+				if(chosenQueue==finishPositions[0])
+				{
+					multiplier = 2;
+				}
+				else if (chosenQueue == finishPositions[1])
+				{
+						multiplier = 0.5;
+				}
+				var winnings:Int = Math.round(multiplier * bet);
+				Main.gameData.money += winnings;
+				SaveManager.saveGame();
+				hud.showEnd(finishPositions, chosenQueue, winnings);
+				if(currentTheme!=null) currentTheme.stop();
+				return;
 			}
 		}
 	}
@@ -83,11 +117,19 @@ class GameState extends State
 			case Hud.CLICK_BET:
 				startGame(Std.parseInt(eventParam));
 			case Hud.SWITCH_SPEED:
-				var newSpeed = Std.parseInt(eventParam);
-				if (speed != newSpeed)
+				if (gameStage == inGame)
 				{
-					speed = newSpeed;
-					checkTheme();
+					var newSpeed = Std.parseInt(eventParam);
+					if (speed != newSpeed)
+					{
+						speed = newSpeed;
+						checkTheme();
+					}
+				}
+				else
+				{
+					bet = Std.parseInt(eventParam);
+					hud.setStartmoney(Main.gameData.money - bet);
 				}
 			case Hud.CLICK_PLAY_PAUSE:
 				if (gameStage == inGame)
@@ -101,6 +143,19 @@ class GameState extends State
 					gameStage = inGame;
 					hud.setPlayPause(false);
 					currentTheme.resume();
+				}
+			case Hud.SOUND_CHANGE:
+				if (gameStage == inGame)
+				{
+					if (Main.gameData.soundMuted)
+					{
+						currentTheme.stop();
+						currentTheme = null;
+					}
+					else
+					{
+						checkTheme();						
+					}
 				}
 		}
 	}
@@ -119,9 +174,9 @@ class GameState extends State
 	
 	private function switchTheme(theme0:Sound, theme1:Sound):Void
 	{
-		if (currentTheme != theme1)
+		if (currentTheme != theme1 && !Main.gameData.soundMuted)
 		{
-			currentTheme.stop();
+			if(currentTheme!=null) currentTheme.stop();
 			theme1.play("", 0, 1, true, false);
 			currentTheme = theme1;
 		}
@@ -130,10 +185,14 @@ class GameState extends State
 	private function startGame(queue:Int):Void
 	{
 		chosenQueue = queue;
-		currentTheme = theme;
 		speed = 1;
-		theme.play("", 0, 1, true);
-		hud.showInGame();
+		if (!Main.gameData.soundMuted)
+		{
+			currentTheme = theme;		
+			theme.play("", 0, 1, true);
+		}
+		hud.showInGame(chosenQueue, bet);
+		Main.gameData.money -= bet;
 		gameStage = inGame;
 	}
 }

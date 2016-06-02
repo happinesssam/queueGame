@@ -51,13 +51,46 @@ Std.parseInt = function(x) {
 	}
 	return v;
 };
+var com_utterlySuperb_queueGame_data_GameData = function() {
+	this.money = com_utterlySuperb_queueGame_data_GameData.START_AMOUNT;
+	this.soundMuted = false;
+};
+com_utterlySuperb_queueGame_data_GameData.__name__ = true;
+var com_utterlySuperb_queueGame_data_SaveManager = function() {
+};
+com_utterlySuperb_queueGame_data_SaveManager.__name__ = true;
+com_utterlySuperb_queueGame_data_SaveManager.saveGame = function() {
+	var storage = js_Browser.getLocalStorage();
+	if(storage == null) {
+		return;
+	}
+	storage.setItem("gameData",JSON.stringify(Main.gameData));
+};
+com_utterlySuperb_queueGame_data_SaveManager.getGame = function() {
+	var storage = js_Browser.getLocalStorage();
+	if(storage == null) {
+		return new com_utterlySuperb_queueGame_data_GameData();
+	}
+	var gameState = storage.getItem("gameData");
+	if(gameState != null && gameState.length > 0) {
+		return JSON.parse(gameState);
+	} else {
+		return new com_utterlySuperb_queueGame_data_GameData();
+	}
+};
 var com_utterlySuperb_queueGame_states_BootState = function() {
 	Phaser.State.call(this);
+	Main.gameData = com_utterlySuperb_queueGame_data_SaveManager.getGame();
 };
 com_utterlySuperb_queueGame_states_BootState.__name__ = true;
 com_utterlySuperb_queueGame_states_BootState.__super__ = Phaser.State;
 com_utterlySuperb_queueGame_states_BootState.prototype = $extend(Phaser.State.prototype,{
-	create: function() {
+	preload: function() {
+		this.load.spritesheet("preloadAssets","assets/images/preloadAssets.png",190,49);
+	}
+	,create: function() {
+		this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+		this.scale.setMinMax(250,400,500,800);
 		this.game.state.start("preloadState");
 	}
 });
@@ -71,10 +104,22 @@ com_utterlySuperb_queueGame_states_MainMenuState.prototype = $extend(Phaser.Stat
 		var title = com_utterlySuperb_queueGame_ui_TextHelper.getText(this.game,0,100,40,"#FFFFFF","Queueueuz");
 		this.game.add.existing(title);
 		title.x = (this.stage.width - title.width) / 2;
-		this.startButton = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,200,200,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigBlue,"Start",$bind(this,this.clickStart),this);
-		this.startButton.addClickSound(this.game.add.audio("sell"));
+		this.startButton = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,200,200,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigYellow,"Start",$bind(this,this.clickStart),this);
 		this.startButton.x = (this.stage.width - this.startButton.width) / 2;
 		this.game.add.existing(this.startButton);
+		if(Main.gameData.money != com_utterlySuperb_queueGame_data_GameData.START_AMOUNT) {
+			this.startButton.setText("Continue");
+			var newButton = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,200,270,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigYellow,"New Game",$bind(this,this.clickNewGame),this);
+			newButton.x = (this.stage.width - this.startButton.width) / 2;
+			this.game.add.existing(newButton);
+		}
+		var attr = com_utterlySuperb_queueGame_ui_TextHelper.getText(this.game,0,770,16,"#FFFFFF","Art assets by Sunisa Thondaengdee");
+		this.game.add.existing(attr);
+		attr.x = (this.game.width - attr.width) / 2;
+	}
+	,clickNewGame: function(button) {
+		Main.gameData.money = com_utterlySuperb_queueGame_data_GameData.START_AMOUNT;
+		this.game.state.start(com_utterlySuperb_queueGame_states_game_GameState.GAME_STATE);
 	}
 	,clickStart: function(button) {
 		this.game.state.start(com_utterlySuperb_queueGame_states_game_GameState.GAME_STATE);
@@ -86,7 +131,15 @@ var com_utterlySuperb_queueGame_states_PreloadState = function() {
 com_utterlySuperb_queueGame_states_PreloadState.__name__ = true;
 com_utterlySuperb_queueGame_states_PreloadState.__super__ = Phaser.State;
 com_utterlySuperb_queueGame_states_PreloadState.prototype = $extend(Phaser.State.prototype,{
-	preload: function() {
+	init: function() {
+		this.game.add.existing(new Phaser.Sprite(this.game,155,250,"preloadAssets",0));
+		this.bar = new Phaser.Sprite(this.game,155,250,"preloadAssets",1);
+		this.game.add.existing(this.bar);
+		this.cropRect = new Phaser.Rectangle(0,0,0,49);
+		this.bar.crop(this.cropRect);
+		this.bar.updateCrop();
+	}
+	,preload: function() {
 		this.load.atlasXML("sprites","assets/images/atlas_0.png","assets/images/atlas_0.xml");
 		this.load.audio("beep",["assets/sounds/beep.mp3","assets/sounds/beep.ogg"]);
 		this.load.audio("sell",["assets/sounds/sell_buy_item.mp3","assets/sounds/sell_buy_item.ogg"]);
@@ -95,6 +148,10 @@ com_utterlySuperb_queueGame_states_PreloadState.prototype = $extend(Phaser.State
 	}
 	,create: function() {
 		this.game.state.start(com_utterlySuperb_queueGame_states_MainMenuState.MAIN_MENU_STATE);
+	}
+	,loadUpdate: function() {
+		this.cropRect.width = 190 * this.load.progress / 100;
+		this.bar.updateCrop();
 	}
 });
 var com_utterlySuperb_queueGame_states_game_GameState = function() {
@@ -105,6 +162,7 @@ com_utterlySuperb_queueGame_states_game_GameState.__super__ = Phaser.State;
 com_utterlySuperb_queueGame_states_game_GameState.prototype = $extend(Phaser.State.prototype,{
 	create: function() {
 		this.game.add.tileSprite(0,0,this.game.width,this.game.height,"sprites","floorTile");
+		this.finishPositions = [];
 		this.queues = [];
 		var _g = 0;
 		while(_g < 3) {
@@ -115,6 +173,9 @@ com_utterlySuperb_queueGame_states_game_GameState.prototype = $extend(Phaser.Sta
 		this.hud = new com_utterlySuperb_queueGame_states_game_hud_Hud(this.game);
 		this.game.add.existing(this.hud);
 		this.hud.clickSignal.add($bind(this,this.hudEvent),this);
+		this.bet = 10;
+		this.hud.showStart(this.bet);
+		this.hud.setStartmoney(Main.gameData.money - this.bet);
 		this.theme = this.game.add.audio("theme",1,true);
 		this.themeFast = this.game.add.audio("themeFast",1,true);
 		this.gameStage = com_utterlySuperb_queueGame_states_game_GameStageType.preGame;
@@ -133,15 +194,37 @@ com_utterlySuperb_queueGame_states_game_GameState.prototype = $extend(Phaser.Sta
 		var _g = this.speed;
 		while(_g1 < _g) {
 			++_g1;
+			var queuesDone = 0;
 			var _g3 = 0;
 			var _g2 = this.queues.length;
 			while(_g3 < _g2) {
 				var i = _g3++;
 				this.queues[i].updateActors();
 				if(this.queues[i].finished) {
-					this.gameStage = com_utterlySuperb_queueGame_states_game_GameStageType.postGame;
-					return;
+					if(this.finishPositions.indexOf(i) == -1) {
+						this.finishPositions.push(i);
+						this.queues[i].setFinishPos(this.finishPositions.length);
+					} else if(this.queues[i].allShoppersOut()) {
+						++queuesDone;
+					}
 				}
+			}
+			if(queuesDone == 3) {
+				this.gameStage = com_utterlySuperb_queueGame_states_game_GameStageType.postGame;
+				var multiplier = 0;
+				if(this.chosenQueue == this.finishPositions[0]) {
+					multiplier = 2;
+				} else if(this.chosenQueue == this.finishPositions[1]) {
+					multiplier = 0.5;
+				}
+				var winnings = Math.round(multiplier * this.bet);
+				Main.gameData.money += winnings;
+				com_utterlySuperb_queueGame_data_SaveManager.saveGame();
+				this.hud.showEnd(this.finishPositions,this.chosenQueue,winnings);
+				if(this.currentTheme != null) {
+					this.currentTheme.stop();
+				}
+				return;
 			}
 		}
 	}
@@ -161,11 +244,26 @@ com_utterlySuperb_queueGame_states_game_GameState.prototype = $extend(Phaser.Sta
 				this.currentTheme.resume();
 			}
 			break;
+		case "soundChange":
+			if(this.gameStage == com_utterlySuperb_queueGame_states_game_GameStageType.inGame) {
+				if(Main.gameData.soundMuted) {
+					this.currentTheme.stop();
+					this.currentTheme = null;
+				} else {
+					this.checkTheme();
+				}
+			}
+			break;
 		case "switchSpeed":
-			var newSpeed = Std.parseInt(eventParam);
-			if(this.speed != newSpeed) {
-				this.speed = newSpeed;
-				this.checkTheme();
+			if(this.gameStage == com_utterlySuperb_queueGame_states_game_GameStageType.inGame) {
+				var newSpeed = Std.parseInt(eventParam);
+				if(this.speed != newSpeed) {
+					this.speed = newSpeed;
+					this.checkTheme();
+				}
+			} else {
+				this.bet = Std.parseInt(eventParam);
+				this.hud.setStartmoney(Main.gameData.money - this.bet);
 			}
 			break;
 		}
@@ -178,18 +276,23 @@ com_utterlySuperb_queueGame_states_game_GameState.prototype = $extend(Phaser.Sta
 		}
 	}
 	,switchTheme: function(theme0,theme1) {
-		if(this.currentTheme != theme1) {
-			this.currentTheme.stop();
+		if(this.currentTheme != theme1 && !Main.gameData.soundMuted) {
+			if(this.currentTheme != null) {
+				this.currentTheme.stop();
+			}
 			theme1.play("",0,1,true,false);
 			this.currentTheme = theme1;
 		}
 	}
 	,startGame: function(queue) {
 		this.chosenQueue = queue;
-		this.currentTheme = this.theme;
 		this.speed = 1;
-		this.theme.play("",0,1,true);
-		this.hud.showInGame();
+		if(!Main.gameData.soundMuted) {
+			this.currentTheme = this.theme;
+			this.theme.play("",0,1,true);
+		}
+		this.hud.showInGame(this.chosenQueue,this.bet);
+		Main.gameData.money -= this.bet;
 		this.gameStage = com_utterlySuperb_queueGame_states_game_GameStageType.inGame;
 	}
 });
@@ -251,7 +354,9 @@ com_utterlySuperb_queueGame_states_game_gameObjects_Counter.prototype = $extend(
 						this.scanTime -= this.processSpeed;
 						if(this.scanTime <= 0) {
 							this.groceriesArray[i].beenScanned = true;
-							this.beep.play();
+							if(!Main.gameData.soundMuted) {
+								this.beep.play();
+							}
 						}
 					} else {
 						this.scanTime = 100;
@@ -285,7 +390,26 @@ com_utterlySuperb_queueGame_states_game_gameObjects_GroceryItem.__name__ = true;
 com_utterlySuperb_queueGame_states_game_gameObjects_GroceryItem.__super__ = Phaser.Sprite;
 com_utterlySuperb_queueGame_states_game_gameObjects_GroceryItem.prototype = $extend(Phaser.Sprite.prototype,{
 });
+var com_utterlySuperb_queueGame_states_game_gameObjects_PayingDisplay = function(game,x,y) {
+	Phaser.Group.call(this,game);
+	this.x = x;
+	this.y = y;
+	this.add(new Phaser.Sprite(game,0,0,"sprites","paying1"));
+	this.bar = new Phaser.Sprite(game,0,0,"sprites","paying0");
+	this.add(this.bar);
+	this.cropRect = new Phaser.Rectangle(0,0,140,49);
+	this.bar.crop(this.cropRect);
+};
+com_utterlySuperb_queueGame_states_game_gameObjects_PayingDisplay.__name__ = true;
+com_utterlySuperb_queueGame_states_game_gameObjects_PayingDisplay.__super__ = Phaser.Group;
+com_utterlySuperb_queueGame_states_game_gameObjects_PayingDisplay.prototype = $extend(Phaser.Group.prototype,{
+	setValue: function(value) {
+		this.cropRect.width = Math.floor(140 * value);
+		this.bar.updateCrop();
+	}
+});
 var com_utterlySuperb_queueGame_states_game_gameObjects_Queue = function(game,index) {
+	this.maxPayTime = 200;
 	this.unloadY = 180;
 	Phaser.Group.call(this,game);
 	this.index = index;
@@ -293,19 +417,22 @@ var com_utterlySuperb_queueGame_states_game_gameObjects_Queue = function(game,in
 	this.counter = new com_utterlySuperb_queueGame_states_game_gameObjects_Counter(game,0,175);
 	this.add(this.counter);
 	this.shoppers = [];
+	this.outShoppers = [];
 	this.setUp();
+	this.ching = game.add.audio("sell");
 };
 com_utterlySuperb_queueGame_states_game_gameObjects_Queue.__name__ = true;
 com_utterlySuperb_queueGame_states_game_gameObjects_Queue.__super__ = Phaser.Group;
 com_utterlySuperb_queueGame_states_game_gameObjects_Queue.prototype = $extend(Phaser.Group.prototype,{
 	setUp: function() {
+		var numItems = 25 + Math.floor(Math.random() * 10);
 		var numShoppers = 2 + Math.floor(Math.random() * 3);
 		var _g1 = 0;
 		while(_g1 < numShoppers) {
 			++_g1;
 			var shopper = new com_utterlySuperb_queueGame_states_game_gameObjects_Shopper(this.game);
 			this.shoppers.push(shopper);
-			shopper.init(4 + Math.floor(Math.random() * 9),2 + Math.random() * 2,1 + Math.random());
+			shopper.init(Math.round(numItems / numShoppers),2 + Math.random() * 2,1 + Math.random());
 			this.add(shopper);
 		}
 		this.shoppers[0].y = this.unloadY + 30;
@@ -315,11 +442,34 @@ com_utterlySuperb_queueGame_states_game_gameObjects_Queue.prototype = $extend(Ph
 			var i = _g11++;
 			this.shoppers[i].y = this.shoppers[i - 1].getBot();
 		}
+		this.payingDisplay = new com_utterlySuperb_queueGame_states_game_gameObjects_PayingDisplay(this.game,0,155);
+		this.add(this.payingDisplay);
+		this.payingDisplay.setValue(0.75);
+		this.payingDisplay.visible = false;
 		this.finished = false;
 	}
 	,updateActors: function() {
+		var destY = 0;
+		if(this.outShoppers.length > 0) {
+			var _g1 = 0;
+			var _g = this.outShoppers.length;
+			while(_g1 < _g) {
+				var i = _g1++;
+				this.outShoppers[i].move(destY);
+				destY = this.outShoppers[i].getBot();
+			}
+			if(this.outShoppers[0].y <= 0) {
+				this.remove(this.outShoppers[0]);
+				this.outShoppers[0].destroy(true);
+				this.outShoppers.shift();
+			}
+		}
+		if(this.shoppers.length == 0) {
+			return;
+		}
+		destY = Math.max(destY,this.unloadY);
 		if(this.shoppers[0].y > this.unloadY) {
-			this.shoppers[0].move(this.unloadY);
+			this.shoppers[0].move(destY);
 		} else {
 			if(this.counter.hasSpaceForItem() && this.shoppers[0].hasUnboughtItem()) {
 				this.counter.addNewItem(this.shoppers[0].getUnboughtItem());
@@ -329,14 +479,47 @@ com_utterlySuperb_queueGame_states_game_gameObjects_Queue.prototype = $extend(Ph
 				this.shoppers[0].addItem(tmp,true);
 			}
 			this.counter.updateItems();
-			var tmp1 = !this.shoppers[0].hasUnboughtItem() && this.counter.allItemsGone();
+			if(!this.shoppers[0].hasUnboughtItem() && this.counter.allItemsGone()) {
+				if(!this.paying) {
+					this.paying = true;
+					this.payingDisplay.visible = true;
+					this.payTime = this.maxPayTime;
+				} else {
+					this.payTime = Math.max(0,this.payTime - this.counter.processSpeed - this.shoppers[0].processSpeed);
+					if(this.payTime <= 0) {
+						if(!Main.gameData.soundMuted) {
+							this.ching.play();
+						}
+						this.payingDisplay.visible = false;
+						this.paying = false;
+						this.outShoppers.push(this.shoppers.shift());
+						this.finished = this.shoppers.length == 0;
+					} else {
+						this.payingDisplay.setValue(1 - this.payTime / this.maxPayTime);
+					}
+				}
+			}
 		}
-		var _g1 = 1;
-		var _g = this.shoppers.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var tmp2 = this.shoppers[i - 1].getBot();
-			this.shoppers[i].move(tmp2);
+		var _g11 = 1;
+		var _g2 = this.shoppers.length;
+		while(_g11 < _g2) {
+			var i1 = _g11++;
+			var tmp1 = this.shoppers[i1 - 1].getBot();
+			this.shoppers[i1].move(tmp1);
+		}
+	}
+	,setFinishPos: function(position) {
+		this.add(new Phaser.Sprite(this.game,100,180,"sprites","medal" + (position - 1)));
+	}
+	,shopperOut: function(shopper) {
+		this.remove(shopper);
+		shopper.destroy(true);
+	}
+	,allShoppersOut: function() {
+		if(this.shoppers.length == 0) {
+			return this.outShoppers.length == 0;
+		} else {
+			return false;
 		}
 	}
 });
@@ -420,29 +603,46 @@ var com_utterlySuperb_queueGame_states_game_hud_Hud = function(game) {
 	bg.beginFill(0,0.5);
 	bg.drawRect(0,140,game.width,4);
 	this.add(bg);
-	this.title = com_utterlySuperb_queueGame_ui_TextHelper.getText(game,0,10,40,"#FFFFFF","Place your bet!".toUpperCase(),"header");
+	this.title = com_utterlySuperb_queueGame_ui_TextHelper.getText(game,30,15,28,"#FFFFFF","Place your bet!".toUpperCase(),"body");
 	this.add(this.title);
 	com_utterlySuperb_queueGame_ui_TextHelper.setHudEffect(this.title);
-	this.showStart();
+	this.info = com_utterlySuperb_queueGame_ui_TextHelper.getText(game,10,15,28,"#FFFFFF","","body");
+	this.add(this.info);
+	com_utterlySuperb_queueGame_ui_TextHelper.setHudEffect(this.info);
 	this.clickSignal = new Phaser.Signal();
 };
 com_utterlySuperb_queueGame_states_game_hud_Hud.__name__ = true;
 com_utterlySuperb_queueGame_states_game_hud_Hud.__super__ = Phaser.Group;
 com_utterlySuperb_queueGame_states_game_hud_Hud.prototype = $extend(Phaser.Group.prototype,{
-	showStart: function() {
-		this.setTitle("Place your bet!".toUpperCase());
+	showStart: function(defaultBet) {
+		this.title.text = "Current: $" + Main.gameData.money;
 		this.betButtons = [];
 		var _g = 0;
 		while(_g < 3) {
 			var i = _g++;
-			var button = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,31 + i * 156,80,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigBlue,"Queue " + (i + 1),$bind(this,this.clickBet),this);
+			var button = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,31 + i * 156,80,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigBlue,"Bet!",$bind(this,this.clickBet),this);
 			button.setButtonWidth(125);
 			this.add(button);
 			button.clickParam = i == null?"null":"" + i;
 			this.betButtons.push(button);
 		}
+		this.speedWidget = new com_utterlySuperb_queueGame_states_game_hud_SpeedWidget(this.game);
+		this.add(this.speedWidget);
+		this.speedWidget.x = 320;
+		this.speedWidget.y = 5;
+		this.speedWidget.setUp("",defaultBet,10,Main.gameData.money,10);
+		this.speedWidget.changeSignal.add($bind(this,this.speedChange),this);
+		this.info.text = "Bet";
+		this.info.x = 310 - this.info.width;
 	}
-	,showInGame: function() {
+	,setStartmoney: function(amount) {
+		this.title.text = "Current: $" + amount;
+	}
+	,showInGame: function(guess,amount) {
+		this.title.text = "Queue:" + (guess + 1);
+		this.info.text = "Bet:" + amount;
+		this.info.x = this.title.x;
+		this.info.y = this.title.y + this.title.height + 10;
 		var _g1 = 0;
 		var _g = this.betButtons.length;
 		while(_g1 < _g) {
@@ -452,17 +652,65 @@ com_utterlySuperb_queueGame_states_game_hud_Hud.prototype = $extend(Phaser.Group
 			console.log(this.betButtons[i]);
 		}
 		this.betButtons = null;
-		this.setTitle("GO!");
-		this.speedWidget = new com_utterlySuperb_queueGame_states_game_hud_SpeedWidget(this.game);
+		this.speedWidget.x = 250;
+		this.speedWidget.y = 70;
+		this.speedWidget.setUp("Speed",1,1,3,1);
 		this.speedWidget.setSpeed(1);
-		this.speedWidget.changeSignal.add($bind(this,this.speedChange),this);
-		this.add(this.speedWidget);
 		this.playPauseButton = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,420,80,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.smallBlue,"",$bind(this,this.clickPlayPause),this);
 		this.add(this.playPauseButton);
 		this.setPlayPause(false);
+		this.muteButton = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,420,20,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.smallBlue,"",$bind(this,this.toggleSoundButton),this);
+		this.add(this.muteButton);
+		this.setSoundButton();
+	}
+	,showEnd: function(finishPositions,playerGuess,winnings) {
+		this.speedWidget.cleanUp();
+		this.remove(this.speedWidget);
+		this.speedWidget.destroy(true);
+		this.speedWidget = null;
+		this.remove(this.playPauseButton);
+		this.playPauseButton.destroy(true);
+		this.playPauseButton = null;
+		this.remove(this.muteButton);
+		this.muteButton.destroy(true);
+		this.muteButton = null;
+		this.title.text = "Queue " + (finishPositions[0] + 1) + " wins! Queue " + (finishPositions[1] + 1) + " comes 2nd";
+		var infoStr = "You guessed queue " + (playerGuess + 1);
+		if(winnings > 0) {
+			infoStr += " and win " + winnings;
+		}
+		this.info.text = infoStr;
+		var feedback = com_utterlySuperb_queueGame_ui_TextHelper.getText(this.game,10,320,32);
+		this.add(feedback);
+		com_utterlySuperb_queueGame_ui_TextHelper.setHudEffect(feedback);
+		if(Main.gameData.money > 10) {
+			feedback.text = "Current cash: $" + Main.gameData.money;
+		} else {
+			feedback.text = "Game over";
+		}
+		feedback.x = (this.game.width - feedback.width) / 2;
+		var continueButton = new com_utterlySuperb_queueGame_ui_PhaserTextButton(this.game,120,380,com_utterlySuperb_queueGame_ui_PhaserTextButtonType.bigBlue,"Continue",$bind(this,this.clickContinue),this);
+		continueButton.x = (this.game.width - continueButton.width) / 2;
+	}
+	,clickContinue: function(button) {
+		if(Main.gameData.money > 10) {
+			this.game.state.start(com_utterlySuperb_queueGame_states_game_GameState.GAME_STATE);
+		} else {
+			Main.gameData.money = com_utterlySuperb_queueGame_data_GameData.START_AMOUNT;
+			com_utterlySuperb_queueGame_data_SaveManager.saveGame();
+			this.game.state.start(com_utterlySuperb_queueGame_states_MainMenuState.MAIN_MENU_STATE);
+		}
 	}
 	,setPlayPause: function(isPaused) {
 		this.playPauseButton.addSprite(isPaused?"play":"pause");
+	}
+	,toggleSoundButton: function(button) {
+		Main.gameData.soundMuted = !Main.gameData.soundMuted;
+		this.setSoundButton();
+		this.clickSignal.dispatch("soundChange");
+	}
+	,setSoundButton: function() {
+		this.muteButton.addSprite(Main.gameData.soundMuted?"audioOff":"audioOn");
 	}
 	,clickBet: function(button) {
 		this.clickSignal.dispatch("clickBet",button.parent.clickParam);
@@ -473,12 +721,10 @@ com_utterlySuperb_queueGame_states_game_hud_Hud.prototype = $extend(Phaser.Group
 	,speedChange: function() {
 		this.clickSignal.dispatch("switchSpeed",Std.string(this.speedWidget.currentSpeed));
 	}
-	,setTitle: function(copy) {
-		this.title.text = copy;
-		this.title.x = (this.game.width - this.title.width) / 2;
-	}
 });
 var com_utterlySuperb_queueGame_states_game_hud_SpeedWidget = function(game) {
+	this.increment = 1;
+	this.minSpeed = 1;
 	this.maxSpeed = 3;
 	this.currentSpeed = -1;
 	Phaser.Group.call(this,game);
@@ -491,22 +737,30 @@ var com_utterlySuperb_queueGame_states_game_hud_SpeedWidget = function(game) {
 	this.speedDisplay = com_utterlySuperb_queueGame_ui_TextHelper.getText(game,55,10,32);
 	this.add(this.speedDisplay);
 	com_utterlySuperb_queueGame_ui_TextHelper.setHudEffect(this.speedDisplay);
-	var label = com_utterlySuperb_queueGame_ui_TextHelper.getText(game,40,-25,24,"#FFFFFF","Speed");
-	this.add(label);
-	com_utterlySuperb_queueGame_ui_TextHelper.setHudEffect(label);
+	this.label = com_utterlySuperb_queueGame_ui_TextHelper.getText(game,40,-25,24,"#FFFFFF","Speed");
+	this.add(this.label);
+	com_utterlySuperb_queueGame_ui_TextHelper.setHudEffect(this.label);
 	this.changeSignal = new Phaser.Signal();
 };
 com_utterlySuperb_queueGame_states_game_hud_SpeedWidget.__name__ = true;
 com_utterlySuperb_queueGame_states_game_hud_SpeedWidget.__super__ = Phaser.Group;
 com_utterlySuperb_queueGame_states_game_hud_SpeedWidget.prototype = $extend(Phaser.Group.prototype,{
-	speedUpClick: function(button) {
-		this.setSpeed(this.currentSpeed + 1);
+	setUp: function(copy,defaultVal,minVal,maxVal,increment) {
+		this.increment = increment;
+		this.label.text = copy;
+		this.currentSpeed = defaultVal;
+		this.speedDisplay.text = Std.string(this.currentSpeed);
+		this.maxSpeed = maxVal;
+		this.minSpeed = minVal;
+	}
+	,speedUpClick: function(button) {
+		this.setSpeed(this.currentSpeed + this.increment);
 	}
 	,slowDownClick: function(button) {
-		this.setSpeed(this.currentSpeed - 1);
+		this.setSpeed(this.currentSpeed - this.increment);
 	}
 	,setSpeed: function(speed) {
-		speed = Math.floor(Math.min(this.maxSpeed,Math.max(1,speed)));
+		speed = Math.floor(Math.min(this.maxSpeed,Math.max(this.minSpeed,speed)));
 		if(speed != this.currentSpeed) {
 			this.currentSpeed = speed;
 			this.speedDisplay.text = Std.string(this.currentSpeed);
@@ -726,11 +980,23 @@ js_Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
+var js_Browser = function() { };
+js_Browser.__name__ = true;
+js_Browser.getLocalStorage = function() {
+	try {
+		var s = window.localStorage;
+		s.getItem("");
+		return s;
+	} catch( e ) {
+		return null;
+	}
+};
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 String.__name__ = true;
 Array.__name__ = true;
 Main.SPRITES = "sprites";
+com_utterlySuperb_queueGame_data_GameData.START_AMOUNT = 50;
 com_utterlySuperb_queueGame_states_BootState.BOOT_STATE = "bootState";
 com_utterlySuperb_queueGame_states_MainMenuState.MAIN_MENU_STATE = "mainMenuState";
 com_utterlySuperb_queueGame_states_PreloadState.PRELOAD_STATE = "preloadState";
@@ -739,6 +1005,7 @@ com_utterlySuperb_queueGame_states_game_gameObjects_Shopper.items = ["box","brea
 com_utterlySuperb_queueGame_states_game_hud_Hud.CLICK_BET = "clickBet";
 com_utterlySuperb_queueGame_states_game_hud_Hud.SWITCH_SPEED = "switchSpeed";
 com_utterlySuperb_queueGame_states_game_hud_Hud.CLICK_PLAY_PAUSE = "clickPlayPause";
+com_utterlySuperb_queueGame_states_game_hud_Hud.SOUND_CHANGE = "soundChange";
 com_utterlySuperb_queueGame_ui_TextHelper.HEADER = "header";
 com_utterlySuperb_queueGame_ui_TextHelper.BODY = "body";
 Main.main();

@@ -37,4 +37,11 @@
 <SubTexture name="buttonBlueSmallUp"  n="buttonBlueSmallUp" x="935" y="52" width="49" w="49" height="49" h="49" frameX="0" frameY="0" frameWidth="49" frameHeight="49"/>
 <SubTexture name="play"  n="play" x="986" y="1" width="28" w="28" height="29" h="29" frameX="0" frameY="0" frameWidth="28" frameHeight="29"/>
 <SubTexture name="pause"  n="pause" x="986" y="32" width="26" w="26" height="28" h="28" frameX="0" frameY="0" frameWidth="26" frameHeight="28"/>
+<SubTexture name="paying0"  n="paying0" x="288" y="103" width="140" w="140" height="49" h="49" frameX="0" frameY="0" frameWidth="140" frameHeight="49"/>
+<SubTexture name="paying1"  n="paying1" x="430" y="103" width="140" w="140" height="49" h="49" frameX="0" frameY="0" frameWidth="140" frameHeight="49"/>
+<SubTexture name="audioOff"  n="audioOff" x="236" y="120" width="50" w="50" height="50" h="50" frameX="0" frameY="0" frameWidth="50" frameHeight="50"/>
+<SubTexture name="audioOn"  n="audioOn" x="158" y="128" width="50" w="50" height="50" h="50" frameX="0" frameY="0" frameWidth="50" frameHeight="50"/>
+<SubTexture name="medal0"  n="medal0" x="99" y="167" width="42" w="42" height="74" h="74" frameX="0" frameY="0" frameWidth="42" frameHeight="74"/>
+<SubTexture name="medal1"  n="medal1" x="29" y="207" width="42" w="42" height="74" h="74" frameX="0" frameY="0" frameWidth="42" frameHeight="74"/>
+<SubTexture name="medal2"  n="medal2" x="572" y="103" width="42" w="42" height="74" h="74" frameX="0" frameY="0" frameWidth="42" frameHeight="74"/>
 </TextureAtlas>

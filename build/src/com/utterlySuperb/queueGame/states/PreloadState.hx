@@ -4,6 +4,8 @@ import com.utterlySuperb.queueGame.ui.PhaserTextButton;
 import com.utterlySuperb.queueGame.ui.TextHelper;
 import phaser.core.State;
 import phaser.gameobjects.Button;
+import phaser.gameobjects.Sprite;
+import phaser.geom.Rectangle;
 
 /**
  * ...
@@ -11,13 +13,31 @@ import phaser.gameobjects.Button;
  */
 class PreloadState extends State
 {
-	var ching:phaser.sound.Sound;
 	static public inline var PRELOAD_STATE:String = "preloadState";
+	
+	private var bar:Sprite;
+	private var cropRect:Rectangle;
 
 	public function new() 
 	{
 		super();
 		
+	}
+	
+	override public function init():Void
+	{
+		var tx:Int = 155;
+		var ty:Int = 250;
+		
+		var bg:Sprite = new Sprite(game, tx, ty, "preloadAssets", 0);
+		game.add.existing(bg);
+		
+		bar = new Sprite(game, tx, ty, "preloadAssets", 1);
+		game.add.existing(bar);
+		
+		cropRect = new Rectangle(0, 0, 0, 49);
+		bar.crop(cropRect);
+		bar.updateCrop();
 	}
 	
 	override public function preload():Void
@@ -32,5 +52,11 @@ class PreloadState extends State
 	override public function create():Void
 	{
 		game.state.start(MainMenuState.MAIN_MENU_STATE);		
+	}
+	
+	override public function loadUpdate():Void 
+	{
+		cropRect.width = 190 * load.progress / 100;
+		bar.updateCrop();
 	}
 }

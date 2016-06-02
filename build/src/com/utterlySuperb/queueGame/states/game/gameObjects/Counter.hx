@@ -18,7 +18,7 @@ class Counter extends Group
 	private var groceriesArray:Array<GroceryItem>;
 	public var itemForUnload:GroceryItem;
 	private var teller:Sprite;
-	private var processSpeed:Float;
+	public var processSpeed:Float;
 	private var unloadY:Float = 10;
 	private var maxY:Float = 0;
 	public var itemDoneSignal:Signal;
@@ -77,7 +77,7 @@ class Counter extends Group
 						if (scanTime <= 0)
 						{
 							groceriesArray[i].beenScanned = true;
-							beep.play();
+							if(!Main.gameData.soundMuted) beep.play();
 						}
 					}
 					else
